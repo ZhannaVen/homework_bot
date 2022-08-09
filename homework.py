@@ -68,9 +68,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Функция извлекает из информации о конкретной
-    домашней работе статус этой работы.
-    """
+    """Функция извлекает статус домашней работы."""
     keys = (
         'homework_name',
         'status',
@@ -88,9 +86,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Функция проверяет доступность переменных окружения,
-    которые необходимы для работы программы.
-    """
+    """Функция проверяет доступность переменных окружения."""
     tokens = (
         ('PRACTICUM_TOKEN', PRACTICUM_TOKEN),
         ('TELEGRAM_TOKEN', TELEGRAM_TOKEN),
