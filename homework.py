@@ -43,7 +43,6 @@ HOMEWORK_STATUSES = {
 
 def send_message(bot, message):
     '''Функция отправляет сообщения пользователю.'''
-
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
         logger.info('Сообщение отправлено.')
@@ -53,7 +52,6 @@ def send_message(bot, message):
 
 def get_api_answer(current_timestamp):
     '''Функция делает запрос к единственному эндпоинту API-сервиса.'''
-
     params = {'from_date': current_timestamp}
     response = requests.get(ENDPOINT, headers=HEADERS, params=params)
     if response.status_code != 200:
@@ -63,7 +61,6 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     '''Функция проверяет ответ API на корректность.'''
-
     if type(response) is not dict and len(response) == 0:
         raise NoDictionary(logger.error('Ничего нет'))
     logger.info('Получены данные последней работы')
@@ -94,7 +91,6 @@ def check_tokens():
     '''Функция проверяет доступность переменных окружения,
     которые необходимы для работы программы.
     '''
-
     tokens = (
         ('PRACTICUM_TOKEN', PRACTICUM_TOKEN),
         ('TELEGRAM_TOKEN', TELEGRAM_TOKEN),
@@ -111,11 +107,10 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-
     if not check_tokens():
         logger.critical('Проверьте переменные окружения.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = 0
+    current_timestamp = int(time.time())
     while True:
         try:
             response = get_api_answer(current_timestamp)
