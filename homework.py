@@ -26,7 +26,7 @@ logger.addHandler(
     logging.FileHandler(
         os.path.join('main.log'),
         mode='a',
-        encoding=None,
+        encoding='utf-8',
         delay=False
     )
 )
@@ -85,8 +85,8 @@ def get_api_answer(current_timestamp):
                 f'текст: {response.json}'
             )
         return response.json()
-    except ConnectionError as error:
-        (
+    except Exception as error:
+        raise ConnectionError(
             f'Ошибка: {error}.'
             'Провалился запрос к API со следующими параметрами:'
             '{url}, {headers}, {params}.'.format(**params_for_response)
@@ -141,14 +141,14 @@ def check_tokens():
         ('TELEGRAM_TOKEN', TELEGRAM_TOKEN),
         ('TELEGRAM_CHAT_ID', TELEGRAM_CHAT_ID),
     )
+    token_checked = True
     for token, value in TOKENS:
-        if value is None:
+        if not value:
             logger.critical(
                 'Отсутствует переменная окружения: {}'.format(token)
             )
-            token_checked = True
-            return not token_checked
-    return True
+            token_checked = False
+    return token_checked
 
 
 def main():
@@ -158,6 +158,8 @@ def main():
     logger.info('Проверка токенов успешно завершена.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    current_report = {}
+    previous_report = {}
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -165,14 +167,10 @@ def main():
             if homeworks != 0:
                 homework = homeworks[0]
                 message = parse_status(homework)
-                current_report = {}
-                current_report[parse_status(homework)] = HOMEWORK_VERDICTS[
-                    parse_status.homework.get('homework_status')]
+                current_report['message'] = message
             else:
                 message = 'Нет ДЗ'
-                current_report = {}
-                current_report[''] = message
-            previous_report = {}
+                current_report['message'] = message
             if current_report != previous_report:
                 send_message(bot, message)
                 previous_report = current_report.copy()
@@ -180,12 +178,13 @@ def main():
                 current_timestamp = response.get('date', time_from_response)
             else:
                 logger.info('Нет новых статусов ДЗ')
-        except Exception:
-            message = 'Какой-то сбой.'
-            NotForSending(logger.exception(message))
-            current_report = {}
-            current_report[''] = message
-            previous_report = {}
+        except NotForSending as error:
+            message = 'Какой-то сбой. Ошибка: {}'
+            logger.error(message.format(error))
+        except Exception as error:
+            message = 'Какой-то сбой. Ошибка: {}'
+            logger.error(message.format(error))
+            current_report['message'] = message
             if current_report != previous_report:
                 send_message(bot, message)
                 previous_report = current_report.copy()
