@@ -19,13 +19,16 @@ from exceptions import (
 
 logger = logging.getLogger(__name__)
 logger.addHandler(
-    logging.StreamHandler(sys.stdout)
+    logging.StreamHandler(sys.stdout),
+
 )
-logging.FileHandler(
-    os.path.join('main.log'),
-    mode='a',
-    encoding=None,
-    delay=False
+logger.addHandler(
+    logging.FileHandler(
+        os.path.join('main.log'),
+        mode='a',
+        encoding=None,
+        delay=False
+    )
 )
 load_dotenv()
 
@@ -77,13 +80,14 @@ def get_api_answer(current_timestamp):
         response = requests.get(**params_for_response)
         if response.status_code != HTTPStatus.OK:
             raise InvalidResponseCode(
-                'Код ответа сервера: {response.status_code},'
-                'причина: {response.reason},'
-                'текст: {response.json}'
+                f'Код ответа сервера: {response.status_code},'
+                f'причина: {response.reason},'
+                f'текст: {response.json}'
             )
         return response.json()
-    except ConnectionError:
-        logger.critical(
+    except ConnectionError as error:
+        (
+            f'Ошибка: {error}.'
             'Провалился запрос к API со следующими параметрами:'
             '{url}, {headers}, {params}.'.format(**params_for_response)
         )
@@ -94,11 +98,11 @@ def check_response(response):
     logger.info('Начало проверки ответа API на корректность')
     if not isinstance(response, dict):
         raise TypeError(logger.error('Ответ не является словарем'))
-    if response['homeworks'] is None:
+    if 'homeworks' not in response:
         raise EmptyAPIReply('Пустой ответ от API')
     homeworks = response.get('homeworks')
     if not isinstance(homeworks, list):
-        raise KeyError(logger.error('Ответ не является списком'))
+        raise KeyError('Ответ не является списком')
     logger.info('Получены данные всех домашних работ')
     return homeworks
 
@@ -139,66 +143,61 @@ def check_tokens():
     )
     for token, value in TOKENS:
         if value is None:
-            logger.error('Отсутствует переменная окружения: {}'.format(token))
-            return False
-    logger.info('Проверка токенов успешно завершена.')
+            logger.critical(
+                'Отсутствует переменная окружения: {}'.format(token)
+            )
+            token_checked = True
+            return not token_checked
     return True
 
 
 def main():
     """Основная логика работы бота."""
-    logging.basicConfig(
-        level=logging.INFO,
-        filename='main.log',
-        format='%(asctime)s, %(levelname)s, %(message)s, %(name)s,',
-        filemode='a',
-    )
     if not check_tokens():
         raise InvalidTokens('Ошибка в переменной(ых) окружения')
+    logger.info('Проверка токенов успешно завершена.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
-            print(homeworks)
-            if len(homeworks) != 0:
+            if homeworks != 0:
                 homework = homeworks[0]
                 message = parse_status(homework)
-                current_report = {
-                    parse_status.homework.get('homework_name'):
-                    HOMEWORK_VERDICTS[
-                        parse_status.homework.get('homework_status')
-                    ]
-                }
-                previous_report = {}
+                current_report = {}
+                current_report[parse_status(homework)] = HOMEWORK_VERDICTS[
+                    parse_status.homework.get('homework_status')]
             else:
                 message = 'Нет ДЗ'
-                current_report = {
-                    '':
-                    message
-                }
-                previous_report = {}
+                current_report = {}
+                current_report[''] = message
+            previous_report = {}
             if current_report != previous_report:
                 send_message(bot, message)
                 previous_report = current_report.copy()
-                current_timestamp = response.get(time.time)
+                time_from_response = response.get(time.time)
+                current_timestamp = response.get('date', time_from_response)
             else:
                 logger.info('Нет новых статусов ДЗ')
-        except NotForSending as error:
-            logger.exception(f'Какой-то сбой. См. ошибку: {error}')
-            current_report = {
-                '':
-                f'Какой-то сбой. См. ошибку: {error}'
-            }
+        except Exception:
+            message = 'Какой-то сбой.'
+            NotForSending(logger.exception(message))
+            current_report = {}
+            current_report[''] = message
+            previous_report = {}
             if current_report != previous_report:
                 send_message(bot, message)
                 previous_report = current_report.copy()
-                current_timestamp = response.get(time.time)
-            time.sleep(RETRY_TIME)
         finally:
             time.sleep(RETRY_TIME)
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.INFO,
+        filename='main.log',
+        format='%(asctime)s, %(levelname)s, %(message)s, %(name)s,',
+        filemode='a',
+    )
     main()
