@@ -164,7 +164,7 @@ def main():
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
-            if homeworks != 0:
+            if homeworks:
                 homework = homeworks[0]
                 message = parse_status(homework)
                 current_report['message'] = message
@@ -174,8 +174,10 @@ def main():
             if current_report != previous_report:
                 send_message(bot, message)
                 previous_report = current_report.copy()
-                time_from_response = response.get(time.time)
-                current_timestamp = response.get('date', time_from_response)
+                current_timestamp = response.get(
+                    'current_date',
+                    current_timestamp
+                )
             else:
                 logger.info('Нет новых статусов ДЗ')
         except NotForSending as error:
@@ -183,7 +185,7 @@ def main():
             logger.error(message.format(error))
         except Exception as error:
             message = 'Какой-то сбой. Ошибка: {}'
-            logger.error(message.format(error))
+            logger.exception(message.format(error))
             current_report['message'] = message
             if current_report != previous_report:
                 send_message(bot, message)
