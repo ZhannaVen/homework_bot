@@ -157,7 +157,7 @@ def main():
         raise InvalidTokens('Ошибка в переменной(ых) окружения')
     logger.info('Проверка токенов успешно завершена.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
+    current_timestamp = 0
     current_report = {}
     previous_report = {}
     while True:
