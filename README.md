@@ -10,9 +10,11 @@
 - Bot logs its work and informs you about important problems with a message to your Telegram chat.
 ### Where requests are sent?
 - Ya.Praktikum.Homework Endpoint - https://practicum.yandex.ru/api/user_api/homework_statuses/ (token-only access)
-### .env file description template
+### Template for .env file
 PRACTICUM_TOKEN=<your secret token for access to Ya.Practicum, that only students have>
+
 TELEGRAM_TOKEN=<secret token of your telegram bot>
+
 TELEGRAM_CHAT_ID=<id of the chat where you want to forward a messadge of a homework status>
 ### Where Telegram_chat_id and Telegram_token can be found?
 - Telegram_chat_id: find @userinfobot, send any message (or resend someone's else message) and Bot will reply you with chat_id;
