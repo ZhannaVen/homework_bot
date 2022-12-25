@@ -11,9 +11,9 @@
 ### Where requests are sent?
 - Ya.Praktikum.Homework Endpoint - https://practicum.yandex.ru/api/user_api/homework_statuses/ (token-only access)
 ### Template for .env file
-PRACTICUM_TOKEN: your secret token for access to Ya.Practicum, that only students have
-TELEGRAM_TOKEN: secret token of your telegram bot
-TELEGRAM_CHAT_ID: id of the chat where you want to forward a messadge of a homework status
+- PRACTICUM_TOKEN: your secret token for access to Ya.Practicum, that only students have
+- TELEGRAM_TOKEN: secret token of your telegram bot
+- TELEGRAM_CHAT_ID: id of the chat where you want to forward a messadge of a homework status
 ### Where telegram_chat_id and telegram_token can be found?
 - Telegram_chat_id: find @userinfobot, send any message (or resend someone's else message) and Bot will reply you with chat_id;
 - Telegram_token: find @BotFather, create your own Bot by following the instructions and then request secret token of your Bot.
