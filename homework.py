@@ -42,9 +42,9 @@ ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 HOMEWORK_VERDICTS = {
-    'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
-    'reviewing': 'Работа взята на проверку ревьюером.',
-    'rejected': 'Работа проверена: у ревьюера есть замечания.'
+    'approved': 'The work is checked: the reviewer liked everything. Hooray!',
+    'reviewing': 'The work is being checked by the reviewer.',
+    'rejected': 'The work has been checked: the reviewer has comments.'
 }
 
 TOKENS = (
@@ -55,18 +55,18 @@ TOKENS = (
 
 
 def send_message(bot, message):
-    """Функция отправляет сообщения пользователю."""
+    """The function sends messages to the user."""
     try:
-        logger.info(f'Отправлено сообщение: {message}')
+        logger.info(f'Tha message was sent: {message}')
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except telegram.error.TelegramError as error:
-        logger.error(f'Ошибка: {error}')
+        logger.error(f'Error: {error}')
     else:
-        logger.info('Сообщение было удачно отправлено')
+        logger.info('The message has been successfuly sent')
 
 
 def get_api_answer(current_timestamp):
-    """Функция делает запрос к единственному эндпоинту API-сервиса."""
+    """The function sends a request to a single endpoint of the API service."""
     params_for_response = {
         'url': ENDPOINT,
         'headers': HEADERS,
@@ -74,41 +74,41 @@ def get_api_answer(current_timestamp):
     }
     try:
         logger.info(
-            'Запрос к API со следующими параметрами:'
+            'API request with the following parameters:'
             '{url}, {headers}, {params}.'.format(**params_for_response)
         )
         response = requests.get(**params_for_response)
         if response.status_code != HTTPStatus.OK:
             raise InvalidResponseCode(
-                f'Код ответа сервера: {response.status_code},'
-                f'причина: {response.reason},'
-                f'текст: {response.json}'
+                f'Server response code: {response.status_code},'
+                f'reason: {response.reason},'
+                f'text: {response.json}'
             )
         return response.json()
     except Exception as error:
         raise ConnectionError(
-            f'Ошибка: {error}.'
-            'Провалился запрос к API со следующими параметрами:'
+            f'Error: {error}.'
+            'API request failed with the following parameters:'
             '{url}, {headers}, {params}.'.format(**params_for_response)
         )
 
 
 def check_response(response):
-    """Функция проверяет ответ API на корректность."""
-    logger.info('Начало проверки ответа API на корректность')
+    """The function checks the API response for correctness."""
+    logger.info('Start checking the API response for correctness')
     if not isinstance(response, dict):
-        raise TypeError(logger.error('Ответ не является словарем'))
+        raise TypeError(logger.error('Answer is not a dictionary'))
     if 'homeworks' not in response:
-        raise EmptyAPIReply('Пустой ответ от API')
+        raise EmptyAPIReply('Empty response from API')
     homeworks = response.get('homeworks')
     if not isinstance(homeworks, list):
-        raise KeyError('Ответ не является списком')
-    logger.info('Получены данные всех домашних работ')
+        raise KeyError('Answer is not a list')
+    logger.info('All homework data was received')
     return homeworks
 
 
 def parse_status(homework):
-    """Функция извлекает статус домашней работы."""
+    """The function extracts the status of the homework."""
     keys = (
         'homework_name',
         'status',
@@ -116,17 +116,17 @@ def parse_status(homework):
     for key in keys:
         if key not in homework:
             raise KeyError(
-                f'Домашняя работа {homework} не содержит такой ключ {key}'
+                f'Homework {homework} does not contains such a key {key}'
             )
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_VERDICTS:
         raise ValueError(
-            f'Получен неожиданный статус работы: "{homework_status}".'
+            f'Unexpected work status was received: "{homework_status}".'
         )
-    logger.info(f'Получен статус домашней работы {homework_name}')
+    logger.info(f'Work status was received {homework_name}')
     return (
-        'Изменился статус проверки работы "{homework_name}".'
+        'Work (статус проверки работы) status has changed "{homework_name}".'
         '{verdict}'.format(
             homework_name=homework_name,
             verdict=HOMEWORK_VERDICTS[homework_status]
@@ -135,7 +135,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Функция проверяет доступность переменных окружения."""
+    """The function checks the availability of environment variables."""
     TOKENS = (
         ('PRACTICUM_TOKEN', PRACTICUM_TOKEN),
         ('TELEGRAM_TOKEN', TELEGRAM_TOKEN),
@@ -145,17 +145,17 @@ def check_tokens():
     for token, value in TOKENS:
         if not value:
             logger.critical(
-                'Отсутствует переменная окружения: {}'.format(token)
+                'Environment variable is missing : {}'.format(token)
             )
             token_checked = False
     return token_checked
 
 
 def main():
-    """Основная логика работы бота."""
+    """The main logic of the bot."""
     if not check_tokens():
-        raise InvalidTokens('Ошибка в переменной(ых) окружения')
-    logger.info('Проверка токенов успешно завершена.')
+        raise InvalidTokens('Error in environment variable(s)')
+    logger.info('Token verification completed successfully.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = 0
     current_report = {}
@@ -169,7 +169,7 @@ def main():
                 message = parse_status(homework)
                 current_report['message'] = message
             else:
-                message = 'Нет ДЗ'
+                message = 'There is no homework'
                 current_report['message'] = message
             if current_report != previous_report:
                 send_message(bot, message)
@@ -179,12 +179,12 @@ def main():
                     current_timestamp
                 )
             else:
-                logger.info('Нет новых статусов ДЗ')
+                logger.info('There is no new homework statuses')
         except NotForSending as error:
-            message = 'Какой-то сбой. Ошибка: {}'
+            message = 'Failure. Error: {}'
             logger.error(message.format(error))
         except Exception as error:
-            message = 'Какой-то сбой. Ошибка: {}'
+            message = 'Failure. Error: {}'
             logger.exception(message.format(error))
             current_report['message'] = message
             if current_report != previous_report:
