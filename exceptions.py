@@ -1,18 +1,18 @@
 class NotForSending(Exception):
-    """Ответы не для пересылки."""
+    """Answers are not for forwarding."""
     pass
 
 
 class EmptyAPIReply(NotForSending):
-    """Пришел пустой ответ от API."""
+    """Received an empty response from the API."""
     pass
 
 
 class InvalidTokens(NotForSending):
-    """Ошибка в переменных окружения."""
+    """Error in environment variables."""
     pass
 
 
 class InvalidResponseCode(Exception):
-    """Неверный код ответа сервера."""
+    """Invalid server response code."""
     pass
