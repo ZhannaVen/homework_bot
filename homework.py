@@ -42,7 +42,7 @@ ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 HOMEWORK_VERDICTS = {
-    'approved': 'The work is checked: the reviewer liked everything. Hooray!',
+    'approved': 'The work has been checked: the reviewer has liked everything. Hooray!',
     'reviewing': 'The work is being checked by the reviewer.',
     'rejected': 'The work has been checked: the reviewer has comments.'
 }
@@ -57,7 +57,7 @@ TOKENS = (
 def send_message(bot, message):
     """The function sends messages to the user."""
     try:
-        logger.info(f'Tha message was sent: {message}')
+        logger.info(f'The message was sent: {message}')
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except telegram.error.TelegramError as error:
         logger.error(f'Error: {error}')
@@ -88,7 +88,7 @@ def get_api_answer(current_timestamp):
     except Exception as error:
         raise ConnectionError(
             f'Error: {error}.'
-            'API request failed with the following parameters:'
+            'API request has failed with the following parameters:'
             '{url}, {headers}, {params}.'.format(**params_for_response)
         )
 
@@ -103,7 +103,7 @@ def check_response(response):
     homeworks = response.get('homeworks')
     if not isinstance(homeworks, list):
         raise KeyError('Answer is not a list')
-    logger.info('All homework data was received')
+    logger.info('All homework data has been received')
     return homeworks
 
 
@@ -116,17 +116,17 @@ def parse_status(homework):
     for key in keys:
         if key not in homework:
             raise KeyError(
-                f'Homework {homework} does not contains such a key {key}'
+                f'Homework {homework} does not contain such a key {key}'
             )
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_VERDICTS:
         raise ValueError(
-            f'Unexpected work status was received: "{homework_status}".'
+            f'Unexpected work status has been received: "{homework_status}".'
         )
-    logger.info(f'Work status was received {homework_name}')
+    logger.info(f'Work status has been received {homework_name}')
     return (
-        'Work (статус проверки работы) status has changed "{homework_name}".'
+        'The status of the work has changed "{homework_name}".'
         '{verdict}'.format(
             homework_name=homework_name,
             verdict=HOMEWORK_VERDICTS[homework_status]
@@ -155,7 +155,7 @@ def main():
     """The main logic of the bot."""
     if not check_tokens():
         raise InvalidTokens('Error in environment variable(s)')
-    logger.info('Token verification completed successfully.')
+    logger.info('Token verification has completed successfully.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = 0
     current_report = {}
@@ -179,7 +179,7 @@ def main():
                     current_timestamp
                 )
             else:
-                logger.info('There is no new homework statuses')
+                logger.info('There are no new homework statuses')
         except NotForSending as error:
             message = 'Failure. Error: {}'
             logger.error(message.format(error))
