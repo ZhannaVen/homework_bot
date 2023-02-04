@@ -18,7 +18,7 @@
 - Telegram_chat_id: find @userinfobot, send any message (or resend someone's else message) and Bot will reply you with chat_id;
 - Telegram_token: find @BotFather, create your own Bot by following the instructions and then request the secret token of your Bot.
 
-### How to run a project (on Unix)
+### How to run a project (Unix)
 - Clone the repository
 ```bash
 git clone git@github.com:ZhannaVen/homework_bot.git
@@ -28,7 +28,7 @@ git clone git@github.com:ZhannaVen/homework_bot.git
 py -3.7 -m venv venv
 source venv/bin/activate
 ```
-- Install all dependencies from requirements.txt file
+- Install all dependencies from requirements.txt
 ```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt

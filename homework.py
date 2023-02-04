@@ -42,7 +42,7 @@ ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 HOMEWORK_VERDICTS = {
-    'approved': 'The work has been checked: the reviewer has liked everything. Hooray!',
+    'approved': 'The work has been checked: the reviewer likes everything.',
     'reviewing': 'The work is being checked by the reviewer.',
     'rejected': 'The work has been checked: the reviewer has comments.'
 }
@@ -66,7 +66,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """The function sends a request to a single endpoint of the API service."""
+    """The function sends a request to a single endpoint of API service."""
     params_for_response = {
         'url': ENDPOINT,
         'headers': HEADERS,
@@ -94,7 +94,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """The function checks the API response for correctness."""
+    """The function checks API response for correctness."""
     logger.info('Start checking the API response for correctness')
     if not isinstance(response, dict):
         raise TypeError(logger.error('Answer is not a dictionary'))
@@ -154,7 +154,7 @@ def check_tokens():
 def main():
     """The main logic of the bot."""
     if not check_tokens():
-        raise InvalidTokens('Error in environment variable(s)')
+        raise InvalidTokens('An error has occured in environment variable(s)')
     logger.info('Token verification has completed successfully.')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = 0
